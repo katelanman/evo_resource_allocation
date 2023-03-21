@@ -9,6 +9,7 @@ class Evo:
         self.pop = {}   # ((ob1, eval1), (obj2, eval2), ...) ==> solution
         self.fitness = {}  # name -> objective func
         self.agents = {}   # name -> (agent operator, # input solutions)
+        self.criteria = {}
 
     def size(self):
         """ The size of the solution population """
@@ -27,6 +28,9 @@ class Evo:
         k    - the number of input solutions (usually 1) """
         self.agents[name] = (op, k)
 
+    def add_criteria(self, name, criteria):
+        self.criteria[name] = criteria
+
     def get_random_solutions(self, k=1):
         """ Pick k random solutions from the population as a list of solutions
             We are returning DEEP copies of these solutions as a list """
@@ -41,8 +45,6 @@ class Evo:
         """Add a new solution to the population """
         eval = tuple([(name, f(sol)) for name, f in self.fitness.items()])
         self.pop[eval] = sol
-
-
 
 
     def run_agent(self, name):
