@@ -91,7 +91,7 @@ class Evo:
 
     def remove_dominated(self):
         nds = reduce(Evo._reduce_nds, self.pop.keys(), self.pop.keys())
-        self.pop = {k:self.pop[k] for k in nds}
+        self.pop = {k: self.pop[k] for k in nds}
 
 
     def __str__(self):

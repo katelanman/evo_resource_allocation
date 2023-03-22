@@ -22,7 +22,7 @@ class TAObjectives:
 
         return sum(overallocated_lst)
 
-    def conflicts(self, test, times):
+    def conflicts(self, test):
         """
 
         """
@@ -36,19 +36,19 @@ class TAObjectives:
 
         return sum(num_conflicts)
 
-    def undersupport(self, test, minimum_support):
+    def undersupport(self, test):
         undersupport_lst = [min - sum(lst) for lst, min in zip(test.T.tolist(), minimum_support) if sum(lst) < min]
 
         return sum(undersupport_lst)
 
-    def unwilling(self, test, prefs):
+    def unwilling(self, test):
         unwilling_lst = np.where((test == 1) & (prefs == 'U'), 1, 0).tolist()
 
         unwilling_count = [sum(lst) for lst in unwilling_lst]
 
         return sum(unwilling_count)
 
-    def unpreferred(self, test, prefs):
+    def unpreferred(test):
         willing_lst = np.where((test == 1) & (prefs == 'W'), 1, 0).tolist()
 
         willing_count = [sum(lst) for lst in willing_lst]
@@ -56,12 +56,17 @@ class TAObjectives:
         return sum(willing_count)
 
 def swapper(solutions):
-    """ Swap two random values """
+    """ Swap two random rows """
     L = solutions[0]
     i = rnd.randrange(0, len(L))
     j = rnd.randrange(0, len(L))
     L[i], L[j] = L[j], L[i]
     return L
+
+def transpose(solutions):
+    L = solutions[0]
+    return list(zip(*L))
+
 
 def main():
     preferences = pd.read_csv('sections_easy.csv')
@@ -83,10 +88,8 @@ def main():
     E.add_agent("swapper", swapper, k=1)
 
     # Seed the population with an initial random solution
-    N = 50
-    L = [rnd.randrange(1,99) for _ in range(N)]
+    L = [[rnd.choice([0, 1]) for _ in range(42)] for _ in range(20)]
     E.add_solution(L)
-    print(E)
 
     # Run the evolver
     E.evolve(100000000, 100, 100000)
