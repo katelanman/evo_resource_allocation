@@ -4,56 +4,58 @@ import pandas as pd
 import numpy as np
 
 
-class TAObjectives:
+sections = pd.read_csv("sections.csv")
+prefs = pd.read_csv("tas.csv")
 
-    def __init__(self):
-        self.criteria = {}
+def overallocation(test):
+    """
+    Gets the total number of over-allocated sections for all rows
+    Param: test: numpy array, one solution
+    Param: max_assigned: list, max assignments requested
+    Return: int, total over-allocated sections in solution
+    """
 
-    def overallocation(self, test):
-        """
-        Gets the total number of over-allocated sections for all rows
-        Param: test: numpy array, one solution
-        Param: max_assigned: list, max assignments requested
-        Return: int, total over-allocated sections in solution
-        """
+    overallocated_lst = [sum(lst) - max for lst, max in zip(test.tolist(), sections['max_assigned']) if
+                         sum(lst) > max]
 
-        overallocated_lst = [sum(lst) - max for lst, max in zip(test.tolist(), self.criteria['max_assigned']) if
-                             sum(lst) > max]
+    return sum(overallocated_lst)
 
-        return sum(overallocated_lst)
 
-    def conflicts(self, test):
-        """
+def conflicts(test):
+    """
+    """
 
-        """
+    conflict_combs = np.where(test == 1, sections[''], 0).tolist()
 
-        conflict_combs = np.where(test == 1, times, 0).tolist()
+    conflict_list = [[_ for _ in lst if _ != 0] for lst in conflict_combs]
+    conflict_set = [set([_ for _ in lst if _ != 0]) for lst in conflict_list]
 
-        conflict_list = [[_ for _ in lst if _ != 0] for lst in conflict_combs]
-        conflict_set = [set([_ for _ in lst if _ != 0]) for lst in conflict_list]
+    num_conflicts = [1 for c_lst, c_set in zip(conflict_list, conflict_set) if len(c_lst) != len(c_set)]
 
-        num_conflicts = [1 for c_lst, c_set in zip(conflict_list, conflict_set) if len(c_lst) != len(c_set)]
+    return sum(num_conflicts)
 
-        return sum(num_conflicts)
 
-    def undersupport(self, test):
-        undersupport_lst = [min - sum(lst) for lst, min in zip(test.T.tolist(), minimum_support) if sum(lst) < min]
+def undersupport(test):
+    undersupport_lst = [min - sum(lst) for lst, min in zip(test.T.tolist(), minimum_support) if sum(lst) < min]
 
-        return sum(undersupport_lst)
+    return sum(undersupport_lst)
 
-    def unwilling(self, test):
-        unwilling_lst = np.where((test == 1) & (prefs == 'U'), 1, 0).tolist()
 
-        unwilling_count = [sum(lst) for lst in unwilling_lst]
+def unwilling(test):
+    unwilling_lst = np.where((test == 1) & (prefs == 'U'), 1, 0).tolist()
 
-        return sum(unwilling_count)
+    unwilling_count = [sum(lst) for lst in unwilling_lst]
 
-    def unpreferred(test):
-        willing_lst = np.where((test == 1) & (prefs == 'W'), 1, 0).tolist()
+    return sum(unwilling_count)
 
-        willing_count = [sum(lst) for lst in willing_lst]
 
-        return sum(willing_count)
+def unpreferred(test):
+    willing_lst = np.where((test == 1) & (prefs == 'W'), 1, 0).tolist()
+
+    willing_count = [sum(lst) for lst in willing_lst]
+
+    return sum(willing_count)
+
 
 def swapper(solutions):
     """ Swap two random rows """
@@ -62,6 +64,7 @@ def swapper(solutions):
     j = rnd.randrange(0, len(L))
     L[i], L[j] = L[j], L[i]
     return L
+
 
 def transpose(solutions):
     L = solutions[0]
