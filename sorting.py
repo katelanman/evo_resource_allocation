@@ -6,6 +6,8 @@ import numpy as np
 
 sections = pd.read_csv("sections.csv")
 prefs = pd.read_csv("tas.csv")
+section_prefs = prefs.loc[:, '0':].values
+allo_prefs = prefs["max_assigned"].values
 
 def overallocation(test):
     """
@@ -15,7 +17,7 @@ def overallocation(test):
     Return: int, total over-allocated sections in solution
     """
 
-    overallocated_lst = [sum(lst) - max for lst, max in zip(test.tolist(), sections['max_assigned']) if
+    overallocated_lst = [sum(lst) - max for lst, max in zip(test, allo_prefs) if
                          sum(lst) > max]
 
     return sum(overallocated_lst)
@@ -25,7 +27,7 @@ def conflicts(test):
     """
     """
 
-    conflict_combs = np.where(test == 1, sections[''], 0).tolist()
+    conflict_combs = np.where(test == 1, sections['daytime'].values, 0).tolist()
 
     conflict_list = [[_ for _ in lst if _ != 0] for lst in conflict_combs]
     conflict_set = [set([_ for _ in lst if _ != 0]) for lst in conflict_list]
@@ -36,7 +38,7 @@ def conflicts(test):
 
 
 def undersupport(test):
-    undersupport_lst = [min - sum(lst) for lst, min in zip(test.T.tolist(), minimum_support) if sum(lst) < min]
+    undersupport_lst = [min - sum(lst) for lst, min in zip(test.T.tolist(), sections['min_ta'].values) if sum(lst) < min]
 
     return sum(undersupport_lst)
 
@@ -59,16 +61,26 @@ def unpreferred(test):
 
 def swapper(solutions):
     """ Swap two random rows """
-    L = solutions[0]
-    i = rnd.randrange(0, len(L))
-    j = rnd.randrange(0, len(L))
-    L[i], L[j] = L[j], L[i]
-    return L
+    new = solutions[0]
+    i = rnd.randrange(0, len(new))
+    j = rnd.randrange(0, len(new))
+    new[i], new[j] = new[j], new[i]
+    return new
 
 
 def transpose(solutions):
-    L = solutions[0]
-    return list(zip(*L))
+    new = solutions[0]
+    return [list(a) for a in list[zip(*new)]]
+
+
+def trade_rows(solutions):
+    sol1 = solutions[0]
+    sol2 = solutions[1]
+    i = rnd.randrange(0, len(sol1))
+
+    sol1[i] = sol2[i]
+    return sol1
+
 
 
 def main():
@@ -89,6 +101,8 @@ def main():
 
     # Register some agents
     E.add_agent("swapper", swapper, k=1)
+    E.add_agent("transpose", transpose, k=1)
+    E.add_agent("trader", trade_rows, k=2)
 
     # Seed the population with an initial random solution
     L = [[rnd.choice([0, 1]) for _ in range(42)] for _ in range(20)]

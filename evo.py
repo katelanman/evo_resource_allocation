@@ -9,7 +9,6 @@ class Evo:
         self.pop = {}   # ((ob1, eval1), (obj2, eval2), ...) ==> solution
         self.fitness = {}  # name -> objective func
         self.agents = {}   # name -> (agent operator, # input solutions)
-        self.criteria = {}
 
     def size(self):
         """ The size of the solution population """
