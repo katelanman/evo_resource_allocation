@@ -44,7 +44,7 @@ def undersupport(test):
 
 
 def unwilling(test):
-    unwilling_lst = np.where((test == 1) & (prefs == 'U'), 1, 0).tolist()
+    unwilling_lst = np.where((test == 1) & (section_prefs == 'U'), 1, 0).tolist()
 
     unwilling_count = [sum(lst) for lst in unwilling_lst]
 
@@ -52,7 +52,7 @@ def unwilling(test):
 
 
 def unpreferred(test):
-    willing_lst = np.where((test == 1) & (prefs == 'W'), 1, 0).tolist()
+    willing_lst = np.where((test == 1) & (section_prefs == 'W'), 1, 0).tolist()
 
     willing_count = [sum(lst) for lst in willing_lst]
 
@@ -88,9 +88,6 @@ def main():
 
     # Create framework
     E = Evo()
-
-    # register ta criteria
-    E.add_criteria('max_assigned', preferences['max_ta'].tolist())
 
     # Register objectives
     E.add_fitness_criteria("overallocation", overallocation)
