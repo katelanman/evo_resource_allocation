@@ -1,7 +1,7 @@
 import random as rnd
 import copy
 from functools import reduce
-
+import datetime
 
 class Evo:
 
@@ -54,15 +54,23 @@ class Evo:
         self.add_solution(new_solution)
 
 
-    def evolve(self, n=1, dom=100, status=100):
+    def evolve(self, n=1, dom=100, status=100, time = 600):
         """ To run n random agents against the population
         n - # of agent invocations
         dom - # of iterations between discarding the dominated solutions
         status - # of iterations it between updates
+        time - length of run time (in seconds)
         """
+        current = datetime.datetime.now()
+        future = current + datetime.timedelta(seconds=time)
 
         agent_names = list(self.agents.keys())
         for i in range(n):
+            current = datetime.datetime.now()
+
+            if current >= future:
+                break
+
             pick = rnd.choice(agent_names) # pick an agent to run
             self.run_agent(pick)
             if  i % dom == 0:
@@ -72,7 +80,7 @@ class Evo:
                 self.remove_dominated()
                 print("Iteration: ", i)
                 print("Population Size: ", self.size())
-                # print(self)
+                print(current)
 
         # Clean up population
         self.remove_dominated()
@@ -99,5 +107,5 @@ class Evo:
         """ Output the solutions in the population """
         rslt = ""
         for eval,sol in self.pop.items():
-            rslt += str(dict(eval))+":\t"+str(sol)+"\n"
+            rslt += str(dict(eval))+"\n" #+":\t"+str(sol)+"\n"
         return rslt
