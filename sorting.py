@@ -26,8 +26,7 @@ def overallocation(test):
 def conflicts(test):
     """
     """
-
-    conflict_combs = np.where(test == 1, sections['daytime'].values, 0).tolist()
+    conflict_combs = np.where(test == 1, sections['daytime'].to_numpy(), 0)
 
     conflict_list = [[_ for _ in lst if _ != 0] for lst in conflict_combs]
     conflict_set = [set([_ for _ in lst if _ != 0]) for lst in conflict_list]
@@ -44,7 +43,7 @@ def undersupport(test):
 
 
 def unwilling(test):
-    unwilling_lst = np.where((test == 1) & (section_prefs == 'U'), 1, 0).tolist()
+    unwilling_lst = np.where((test == 1) & (section_prefs == 'U'), 1, 0)
 
     unwilling_count = [sum(lst) for lst in unwilling_lst]
 
@@ -52,7 +51,7 @@ def unwilling(test):
 
 
 def unpreferred(test):
-    willing_lst = np.where((test == 1) & (section_prefs == 'W'), 1, 0).tolist()
+    willing_lst = np.where((test == 1) & (section_prefs == 'W'), 1, 0)
 
     willing_count = [sum(lst) for lst in willing_lst]
 
@@ -66,11 +65,11 @@ def swapper(solutions):
     j = rnd.randrange(0, len(new))
     new[i], new[j] = new[j], new[i]
     return new
-
-
-def transpose(solutions):
-    new = solutions[0]
-    return [list(a) for a in list[zip(*new)]]
+#
+#
+# def transpose(solutions):
+#     new = solutions[0]
+#     return [list(a) for a in list[zip(*new)]]
 
 
 def trade_rows(solutions):
@@ -81,6 +80,14 @@ def trade_rows(solutions):
     sol1[i] = sol2[i]
     return sol1
 
+
+def change_assigned(solutions):
+    new = solutions[0]
+    i = rnd.randrange(0, len(new))
+    j = rnd.randrange(0, len(new[0]))
+
+    new[i][j] = (new[i][j] + 1) % 2
+    return new
 
 
 def main():
@@ -98,15 +105,15 @@ def main():
 
     # Register some agents
     E.add_agent("swapper", swapper, k=1)
-    E.add_agent("transpose", transpose, k=1)
+    # E.add_agent("transpose", transpose, k=1)
     E.add_agent("trader", trade_rows, k=2)
 
     # Seed the population with an initial random solution
-    L = [[rnd.choice([0, 1]) for _ in range(42)] for _ in range(20)]
+    L = np.array([[rnd.choice([0, 1]) for _ in range(17)] for _ in range(43)])
     E.add_solution(L)
 
     # Run the evolver
-    E.evolve(100000000, 100, 100000)
+    E.evolve(10000, 100, 100)
 
     # Print final results
     print(E)

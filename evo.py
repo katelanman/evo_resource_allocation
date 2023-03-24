@@ -57,7 +57,9 @@ class Evo:
     def evolve(self, n=1, dom=100, status=100):
         """ To run n random agents against the population
         n - # of agent invocations
-        dom - # of iterations between discarding the dominated solutions """
+        dom - # of iterations between discarding the dominated solutions
+        status - # of iterations it between updates
+        """
 
         agent_names = list(self.agents.keys())
         for i in range(n):
@@ -70,7 +72,7 @@ class Evo:
                 self.remove_dominated()
                 print("Iteration: ", i)
                 print("Population Size: ", self.size())
-                print(self)
+                # print(self)
 
         # Clean up population
         self.remove_dominated()
