@@ -3,6 +3,9 @@ import copy
 from functools import reduce
 import datetime
 
+import pandas as pd
+
+
 class Evo:
 
     def __init__(self):
@@ -39,12 +42,10 @@ class Evo:
             popvals = tuple(self.pop.values())
             return [copy.deepcopy(rnd.choice(popvals)) for _ in range(k)]
 
-
     def add_solution(self, sol):
         """Add a new solution to the population """
         eval = tuple([(name, f(sol)) for name, f in self.fitness.items()])
         self.pop[eval] = sol
-
 
     def run_agent(self, name):
         """ Invoke an agent against the current population """
@@ -52,7 +53,6 @@ class Evo:
         picks = self.get_random_solutions(k)
         new_solution = op(picks)
         self.add_solution(new_solution)
-
 
     def evolve(self, n=1, dom=100, status=100, time = 600):
         """ To run n random agents against the population
@@ -69,6 +69,7 @@ class Evo:
             current = datetime.datetime.now()
 
             if current >= future:
+                self.remove_dominated()
                 break
 
             pick = rnd.choice(agent_names) # pick an agent to run
@@ -82,8 +83,12 @@ class Evo:
                 print("Population Size: ", self.size())
                 print(current)
 
+
         # Clean up population
         self.remove_dominated()
+
+        # get summary
+        self.get_summary()
 
     @staticmethod
     def _dominates(p, q):
@@ -102,10 +107,25 @@ class Evo:
         nds = reduce(Evo._reduce_nds, self.pop.keys(), self.pop.keys())
         self.pop = {k: self.pop[k] for k in nds}
 
+    def get_summary(self):
+        """
+        Creates summary csv of the final solution that is created
+        """
+        over = [dict(eval)['overallocation'] for eval, sol in self.pop.items()]
+        conflicts = [dict(eval)['conflicts'] for eval, sol in self.pop.items()]
+        under = [dict(eval)['undersupport'] for eval, sol in self.pop.items()]
+        unwill = [dict(eval)['unwilling'] for eval, sol in self.pop.items()]
+        unpref = [dict(eval)['unpreferred'] for eval, sol in self.pop.items()]
+        no_tas = [dict(eval)['no_tas'] for eval, sol in self.pop.items()]
+
+        df = pd.DataFrame(data={'Over': over, 'Conflicts': conflicts, 'Undersupport': under, 'Unwilling': unwill,
+                           'Unpreferred': unpref, 'No TAs Assigned': no_tas})
+
+        df.to_csv('summary_table.csv')
 
     def __str__(self):
         """ Output the solutions in the population """
         rslt = ""
         for eval,sol in self.pop.items():
-            rslt += str(dict(eval))+"\n" #+":\t"+str(sol)+"\n"
+            rslt += str(dict(eval))+"\n" + ":\t" + str(sol)+"\n"
         return rslt
